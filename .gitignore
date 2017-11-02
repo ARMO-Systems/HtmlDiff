@@ -71,3 +71,4 @@ packages/
 *.fb7lck
 *.fbpInf
 *.tcCfgExtender
+/Source/.vs/Main/v15/sqlite3/storage.ide

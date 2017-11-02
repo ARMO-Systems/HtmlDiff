@@ -8,27 +8,12 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
 {
     public class HtmlDiff
     {
-        private readonly StringBuilder content;
-        private readonly string newText;
-        private readonly string oldText;
-        private readonly string[] specialCaseClosingTags = { "</strong>", "</b>", "</i>", "</big>", "</small>", "</u>", "</sub>", "</sup>", "</strike>", "</s>" };
-
-        private readonly string[] specialCaseOpeningTags =
-        {
-            "<strong[\\>\\s]+", "<b[\\>\\s]+", "<i[\\>\\s]+", "<big[\\>\\s]+", "<small[\\>\\s]+", "<u[\\>\\s]+", "<sub[\\>\\s]+", "<sup[\\>\\s]+", "<strike[\\>\\s]+", "<s[\\>\\s]+"
-        };
-
-        private List< Operation > computedOperations;
-
-        private string[] newWords;
-        private string[] oldWords;
-        private Dictionary< string, List< int > > wordIndices;
-
         /// <summary>
-        /// Initializes a new instance of the <see>
-        ///         <cref>Diff</cref>
-        ///     </see>
-        ///     class.
+        ///   Initializes a new instance of the
+        ///   <see>
+        ///     <cref>Diff</cref>
+        ///   </see>
+        ///   class.
         /// </summary>
         /// <param name="oldText">The old text.</param>
         /// <param name="newText">The new text.</param>
@@ -40,8 +25,33 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
             content = new StringBuilder();
         }
 
+        private readonly StringBuilder content;
+        private readonly string newText;
+        private readonly string oldText;
+        private readonly string[] specialCaseClosingTags = { "</strong>", "</b>", "</i>", "</big>", "</small>", "</u>", "</sub>", "</sup>", "</strike>", "</s>" };
+
+        private readonly string[] specialCaseOpeningTags =
+        {
+            "<strong[\\>\\s]+",
+            "<b[\\>\\s]+",
+            "<i[\\>\\s]+",
+            "<big[\\>\\s]+",
+            "<small[\\>\\s]+",
+            "<u[\\>\\s]+",
+            "<sub[\\>\\s]+",
+            "<sup[\\>\\s]+",
+            "<strike[\\>\\s]+",
+            "<s[\\>\\s]+"
+        };
+
+        private List< Operation > computedOperations;
+
+        private string[] newWords;
+        private string[] oldWords;
+        private Dictionary< string, List< int > > wordIndices;
+
         /// <summary>
-        /// Compute differn between two files
+        ///   Compute differn between two files
         /// </summary>
         /// <returns>Contains different</returns>
         public bool ComputeDiff()
@@ -55,14 +65,14 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
         }
 
         /// <summary>
-        /// Builds the HTML diff output
+        ///   Builds the HTML diff output
         /// </summary>
         /// <exception cref="ArgumentNullException"></exception>
         /// <returns>HTML diff markup</returns>
         public string BuildDiffPage()
         {
             if ( computedOperations == null )
-// ReSharper disable once NotResolvedInText
+                // ReSharper disable once NotResolvedInText
                 throw new ArgumentNullException( "computedOperations", "Call ComputeDiff function before call Build" );
 
             foreach ( var item in Operations() )
@@ -94,7 +104,7 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
         private static string[] ConvertHtmlToListOfWords( IEnumerable< string > characterString )
         {
             var mode = Mode.Character;
-            var currentWord = String.Empty;
+            var currentWord = string.Empty;
             var words = new List< string >();
 
             foreach ( var character in characterString )
@@ -105,7 +115,7 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
 
                         if ( IsStartOfTag( character ) )
                         {
-                            if ( currentWord != String.Empty )
+                            if ( currentWord != string.Empty )
                                 words.Add( currentWord );
 
                             currentWord = "<";
@@ -113,7 +123,7 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
                         }
                         else if ( Regex.IsMatch( character, "\\s" ) )
                         {
-                            if ( currentWord != String.Empty )
+                            if ( currentWord != string.Empty )
                                 words.Add( currentWord );
                             currentWord = character;
                             mode = Mode.Whitespace;
@@ -140,7 +150,7 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
 
                         if ( IsStartOfTag( character ) )
                         {
-                            if ( currentWord != String.Empty )
+                            if ( currentWord != string.Empty )
                                 words.Add( currentWord );
                             currentWord = "<";
                             mode = Mode.Tag;
@@ -149,7 +159,7 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
                             currentWord += character;
                         else
                         {
-                            if ( currentWord != String.Empty )
+                            if ( currentWord != string.Empty )
                                 words.Add( currentWord );
 
                             currentWord = character;
@@ -226,20 +236,23 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
         private void ProcessEqualOperation( Operation operation )
         {
             var result = newWords.Where( ( s, pos ) => pos >= operation.StartInNew && pos < operation.EndInNew ).ToArray();
-            content.Append( String.Join( "", result ) );
+            content.Append( string.Join( "", result ) );
         }
 
         /// <summary>
-        /// This method encloses words within a specified tag (ins or del), and adds this into "content", 
-        /// with a twist: if there are words contain tags, it actually creates multiple ins or del, 
-        /// so that they don't include any ins or del. This handles cases like
-        /// old: '<p>a</p>'
-        /// new: '<p>ab</p><p/>c'
-        /// diff result: '<p>a<ins>b</ins></p><p><ins>c</ins></p>'
-        /// this still doesn't guarantee valid HTML (hint: think about diffing a text containing ins or
-        /// del tags), but handles correctly more cases than the earlier version.
-        /// 
-        /// P.S.: Spare a thought for people who write HTML browsers. They live in this ... every day.
+        ///   This method encloses words within a specified tag (ins or del), and adds this into "content",
+        ///   with a twist: if there are words contain tags, it actually creates multiple ins or del,
+        ///   so that they don't include any ins or del. This handles cases like
+        ///   old: '<p>a</p>'
+        ///   new: '<p>ab</p><p />c'
+        ///   diff result: '<p>a<ins>b</ins></p>
+        ///   <p>
+        ///     <ins>c</ins>
+        ///   </p>
+        ///   '
+        ///   this still doesn't guarantee valid HTML (hint: think about diffing a text containing ins or
+        ///   del tags), but handles correctly more cases than the earlier version.
+        ///   P.S.: Spare a thought for people who write HTML browsers. They live in this ... every day.
         /// </summary>
         /// <param name="tag"></param>
         /// <param name="cssClass"></param>
@@ -285,9 +298,9 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
                     break;
 
                 if ( specialCaseTagInjectionIsBefore )
-                    content.Append( specialCaseTagInjection + String.Join( "", ExtractConsecutiveWords( words, IsTag ) ) );
+                    content.Append( specialCaseTagInjection + string.Join( "", ExtractConsecutiveWords( words, IsTag ) ) );
                 else
-                    content.Append( String.Join( "", ExtractConsecutiveWords( words, IsTag ) ) + specialCaseTagInjection );
+                    content.Append( string.Join( "", ExtractConsecutiveWords( words, IsTag ) ) + specialCaseTagInjection );
             }
         }
 
@@ -352,8 +365,8 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
 
             foreach ( var match in matches )
             {
-                var matchStartsAtCurrentPositionInOld = ( positionInOld == match.StartInOld );
-                var matchStartsAtCurrentPositionInNew = ( positionInNew == match.StartInNew );
+                var matchStartsAtCurrentPositionInOld = positionInOld == match.StartInOld;
+                var matchStartsAtCurrentPositionInNew = positionInNew == match.StartInNew;
 
                 Action action;
 
@@ -500,7 +513,7 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
     {
         Character,
         Tag,
-        Whitespace,
+        Whitespace
     }
 
     internal enum Action
