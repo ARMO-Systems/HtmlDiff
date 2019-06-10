@@ -129,7 +129,9 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
                             mode = Mode.Whitespace;
                         }
                         else
+                        {
                             currentWord += character;
+                        }
 
                         break;
                     case Mode.Tag:
@@ -143,7 +145,9 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
                             mode = IsWhiteSpace( character ) ? Mode.Whitespace : Mode.Character;
                         }
                         else
+                        {
                             currentWord += character;
+                        }
 
                         break;
                     case Mode.Whitespace:
@@ -156,7 +160,9 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
                             mode = Mode.Tag;
                         }
                         else if ( Regex.IsMatch( character, "\\s" ) )
+                        {
                             currentWord += character;
+                        }
                         else
                         {
                             if ( currentWord != string.Empty )
@@ -319,6 +325,7 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
 
                 if ( condition( word ) )
                     continue;
+
                 indexOfFirstTag = i;
                 break;
             }
@@ -407,6 +414,7 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
 
                 if ( match == null )
                     return;
+
                 if ( startInOld < match.StartInOld && startInNew < match.StartInNew )
                     FindMatchingBlocks( startInOld, match.StartInOld, startInNew, match.StartInNew, matchingBlocks );
 
@@ -455,6 +463,7 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
 
                     if ( newMatchLength <= bestMatchSize )
                         continue;
+
                     bestMatchInOld = indexInOld - newMatchLength + 1;
                     bestMatchInNew = indexInNew - newMatchLength + 1;
                     bestMatchSize = newMatchLength;
@@ -480,15 +489,9 @@ namespace ArmoSystems.ArmoGet.HtmlDiff
         public int StartInNew { get; set; }
         public int Size { get; set; }
 
-        public int EndInOld
-        {
-            get { return StartInOld + Size; }
-        }
+        public int EndInOld => StartInOld + Size;
 
-        public int EndInNew
-        {
-            get { return StartInNew + Size; }
-        }
+        public int EndInNew => StartInNew + Size;
     }
 
     internal sealed class Operation
